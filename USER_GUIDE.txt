@@ -1,0 +1,49 @@
+FM26 AI Co-pilot — User guide (course submission)
+================================================
+
+WHAT IT IS
+  Real-time helper for Football Manager 26: captures the match screen (Windows
+  DXGI), reads the scoreboard with OCR (EasyOCR), estimates kit colours (OpenCV
+  HSV), runs a tactical/recommendation pipeline, and shows a Qt overlay.
+
+AI / “INTELLIGENT” PARTS (for your report)
+  • EasyOCR — deep-learning text recognition on scoreboard crops (team codes, score).
+  • Classical CV — preprocessing (resize, CLAHE, thresholds) before OCR.
+  • Optional ONNX detector — pitch/objects if you provide a model (--onnx-model).
+  • Optional second OCR — Tesseract, for comparison / assignment “alternative approach”:
+      pip install pytesseract
+      (install Tesseract OCR for Windows separately)
+      py -3.12 -m fm26_copilot.benchmark_ocr --images <crops_dir> --labels labels.csv
+
+ENVIRONMENT
+  • OS: Windows 10/11 (DXGI capture).
+  • Python: 3.11 or 3.12 recommended (EasyOCR / PyTorch wheels).
+  • GPU: optional; CPU works but first OCR is slower.
+  • Disk: EasyOCR downloads models on first run (~100MB+).
+
+INSTALL
+  cd <project_root>
+  py -3.12 -m pip install -e .
+
+RUN (examples)
+  py -3.12 -m fm26_copilot.app --diagnostics --team-code ASM --seconds 0
+  py -3.12 -m fm26_copilot.app --roi-config fm26_copilot\scoreboard_rois.calibrated.json ...
+  py -3.12 -m fm26_copilot.app --dump-scoreboard-crops E:\dbg   # one frame, debug PNGs
+
+CALIBRATION
+  • Ruler PNGs: 00b_* and 00c_* from --dump-scoreboard-crops.
+  • Saved ROI JSON: fm26_copilot/scoreboard_rois.calibrated.json
+    Copy to %USERPROFILE%\.fm26_copilot\scoreboard_rois.json or pass --roi-config.
+
+KIT COLOURS / CHANNELS
+  • If red/blue look swapped: set FM26_KIT_INPUT_RGB=1 before run (RGB vs BGR capture).
+
+REPORT / ASSIGNMENT
+  • Fill the course ODT yourself; declare AI tools (Cursor, etc.) in section 2.c.
+  • For charts: run benchmark_ocr with --csv-out and build a bar chart in LibreOffice
+    (EasyOCR vs Tesseract accuracy / time).
+
+ZIP SUBMISSION
+  • Include: ODT report, this code, USER_GUIDE.txt, small JSON configs.
+  • Exclude: venv, .git, EasyOCR model cache (link in report if needed).
+  • Keep package under course size limit (~10 MB).

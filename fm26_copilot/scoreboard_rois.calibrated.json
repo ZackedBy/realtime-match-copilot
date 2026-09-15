@@ -1,0 +1,15 @@
+{
+  "_note": "1920x1080 FM26 — скопируй в %USERPROFILE%\\.fm26_copilot\\scoreboard_rois.json или запускай с --roi-config путь\\к\\этому\\файлу",
+  "TOP_Y0": 0.0172,
+  "TOP_Y1": 0.0532,
+  "HOME_NAME_X0": 0.49,
+  "HOME_NAME_X1": 0.52,
+  "SCORE_X0": 0.52,
+  "SCORE_X1": 0.56,
+  "AWAY_NAME_X0": 0.562,
+  "AWAY_NAME_X1": 0.598,
+  "HOME_KIT_X0": 0.483,
+  "HOME_KIT_X1": 0.485,
+  "AWAY_KIT_X0": 0.601,
+  "AWAY_KIT_X1": 0.603
+}
