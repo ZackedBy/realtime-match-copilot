@@ -423,9 +423,9 @@ class MatchIntelExtractor:
         return self._normalize_team_ocr(best) if best else ""
 
     def _read_scoreboard_teams(self, frame_bgr: object) -> tuple[str, str, str]:
-        try:
-            import cv2  # type: ignore
-        except ImportError:
+        import importlib.util
+
+        if importlib.util.find_spec("cv2") is None:
             return "", "", "ocr_unavailable"
 
         left_img = sb.crop_norm(frame_bgr, sb.HOME_NAME_X0, sb.HOME_NAME_X1, sb.TOP_Y0, sb.TOP_Y1)

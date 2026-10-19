@@ -39,14 +39,16 @@ class ScreenCapture:
             if self._live_mode_enabled and self._dxgi_camera is not None:
                 frame = self._dxgi_camera.get_latest_frame()
                 if frame is not None:
+                    # Live pixels only. Match stats stay neutral until OCR fills FrameSignals —
+                    # do not inject random score/possession into the tactical path.
                     yield FrameSignals(
                         timestamp_ms=ts_ms,
-                        scoreboard_time_s=scoreboard_time_s,
-                        score_home=home_score,
-                        score_away=away_score,
-                        possession_home_pct=random.uniform(35, 65),
-                        fatigue_home=min(1.0, scoreboard_time_s / 7200),
-                        fatigue_away=min(1.0, scoreboard_time_s / 7000),
+                        scoreboard_time_s=0,
+                        score_home=0,
+                        score_away=0,
+                        possession_home_pct=50.0,
+                        fatigue_home=0.0,
+                        fatigue_away=0.0,
                         camera_zoom=1.0,
                         raw_frame=frame,
                         tracked_objects=[],
@@ -54,6 +56,7 @@ class ScreenCapture:
                     time.sleep(frame_interval)
                     continue
 
+            # Simulation path: synthetic clock/score/possession are intentional.
             yield FrameSignals(
                 timestamp_ms=ts_ms,
                 scoreboard_time_s=scoreboard_time_s,

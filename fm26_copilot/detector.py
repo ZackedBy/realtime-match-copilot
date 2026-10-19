@@ -102,7 +102,6 @@ class OpenCVOnnxDetector:
         if patch.size == 0:
             return TeamSide.HOME if norm_x < 0.5 else TeamSide.AWAY
         hsv = cv2.cvtColor(patch, cv2.COLOR_BGR2HSV)
-        mean_h = float(np.mean(hsv[:, :, 0]))
         mean_s = float(np.mean(hsv[:, :, 1]))
         mean_v = float(np.mean(hsv[:, :, 2]))
         is_light_kit = mean_v > 115 and mean_s < 110
@@ -160,7 +159,11 @@ class OpenCVOnnxDetector:
             return None
 
     def _run_onnx_confidence(self, image: object) -> float:
-        # Lightweight health signal for model availability.
+        """Return a stub confidence if an ONNX session loaded.
+
+        Does **not** run model inference or produce boxes. Kept as a session
+        health probe until a real FM detector export is wired in.
+        """
         if self._session is None:
             return 0.0
         _ = image

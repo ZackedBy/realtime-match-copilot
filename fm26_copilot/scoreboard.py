@@ -17,7 +17,7 @@ class SideDetectionResult:
 class ScoreboardSideResolver:
     def __init__(self, use_ocr: bool = True):
         self.use_ocr = use_ocr
-        self._team_reader = MatchIntelExtractor(use_ocr=True)
+        self._team_reader = MatchIntelExtractor(use_ocr=use_ocr)
 
     def resolve(self, frame_bgr: object, managed_team_code: str) -> SideDetectionResult:
         if frame_bgr is None:
@@ -30,6 +30,8 @@ class ScoreboardSideResolver:
 
         chip_result = self._resolve_by_team_color_chips(frame_bgr)
         if chip_result.side is not None:
+            return chip_result
+        if chip_result.reason and chip_result.reason != "unresolved":
             return chip_result
         return SideDetectionResult(side=None, confidence=0.0, reason="unresolved")
 

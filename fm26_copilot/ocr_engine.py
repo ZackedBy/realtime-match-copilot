@@ -167,9 +167,9 @@ def read_text_line(
     allowlist: str | None = None,
 ) -> str:
     """Single-line style crop: left-to-right box order, joined with spaces."""
-    try:
-        import easyocr  # type: ignore
-    except ImportError:
+    import importlib.util
+
+    if importlib.util.find_spec("easyocr") is None:
         return ""
 
     gray = preprocess_for_ocr(image_bgr_gray_or_binary, scale=scale)
@@ -222,9 +222,9 @@ def read_text_block(
     min_confidence: float = 0.18,
 ) -> str:
     """Larger ROI (tables / squad lists): paragraph grouping, newlines between groups."""
-    try:
-        import easyocr  # type: ignore
-    except ImportError:
+    import importlib.util
+
+    if importlib.util.find_spec("easyocr") is None:
         return ""
 
     gray = preprocess_for_ocr(frame_roi_bgr, scale=scale)

@@ -2,6 +2,8 @@
 name = "fm26-ai-copilot"
 version = "0.1.0"
 description = "Real-time AI co-pilot scaffold for Football Manager 26 3D matches."
+readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=1.26.0",
@@ -13,9 +15,35 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Second OCR backend for course evaluation / “alternative AI approach” (install Tesseract binary on OS)
+# Second OCR backend for course evaluation / alternative approach (OS Tesseract binary required)
 benchmark = ["pytesseract>=0.3.10"]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6",
+]
+
+[project.scripts]
+fm26-copilot = "fm26_copilot.app:main"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["fm26_copilot*"]
+
+[tool.setuptools.package-data]
+fm26_copilot = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+# Keep CI strict on bugs; style modernization (UP/I) can land in a follow-up.
+select = ["E", "F", "W"]
+ignore = ["E501"]

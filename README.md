@@ -1,80 +1,84 @@
 # FM26 AI Co-pilot
 
-Production-oriented scaffold for a real-time Football Manager 26 assistant:
+Desktop assistant scaffold for **Football Manager 26** match screens: capture the pitch UI, estimate tactical pressure with classical CV + scoreboard OCR, and surface a few explainable coaching tips in an overlay.
 
-- Screen/frame ingestion pipeline
-- Vision + tracking abstractions
-- Tactical state engine
-- Explainable recommendation engine
-- Safety/confidence gating
-- Overlay-friendly UI event stream
-- Feedback, drift checks, and release policy primitives
+This is a **working prototype / portfolio project**, not a production ML product. Vision is OpenCV heuristics (optional ONNX path is an availability probe only). Match clock, score, and possession are simulated in `--sim` mode; in live mode those fields stay neutral until wired from OCR.
 
-## Quick start
+## What works today
+
+| Layer | Status |
+|-------|--------|
+| DXGI screen capture (Windows) | Live via `dxcam` |
+| Simulation capture | Cross-platform (`--sim`) |
+| Player/ball blobs + tracking | Classical CV |
+| Scoreboard side / kit OCR | EasyOCR + calibrated ROIs |
+| Rule-based recommendations + safety gate | Deterministic heuristics |
+| Qt / console overlay | Optional |
+| Feedback / drift / rollout gates | Scaffold only (not a real release pipeline) |
+
+## Requirements
+
+- Python **3.11+** (3.11–3.12 recommended on Windows for prebuilt wheels)
+- **Live capture:** Windows + FM26 match on screen + `dxcam`
+- **Everyone else:** use `--sim --no-qt`
+
+## Install
 
 ```bash
-python -m fm26_copilot.app
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+python -m pip install -e ".[dev]"
 ```
 
-## Modes
+EasyOCR pulls **PyTorch** and downloads models on first OCR use.
 
-- Live capture (DXGI Desktop Duplication + Qt overlay):
+## Run (about one minute after install)
+
+Simulation (any OS):
+
+```bash
+python -m fm26_copilot.app --sim --no-qt --seconds 5
+```
+
+Live (Windows, match visible):
 
 ```bash
 python -m fm26_copilot.app --seconds 0 --fps 20 --monitor 0
 ```
 
-- Simulation mode:
+Tests:
 
 ```bash
-python -m fm26_copilot.app --sim --no-qt
+python -m pytest
 ```
 
-## Install dependencies
+## Useful flags
 
 ```bash
-python -m pip install -e .
-```
+# Manual side / no auto switch
+python -m fm26_copilot.app --sim --no-qt --no-auto-team-side --team-side home --team-code ASM
 
-EasyOCR pulls in **PyTorch** and downloads models on first OCR use. On Windows, **Python 3.11–3.12** usually gets prebuilt wheels for all transitive deps; very new Python versions may need [Build Tools for Visual Studio](https://visualstudio.microsoft.com/visual-cpp-build-tools/) if a package falls back to a source build.
-
-## Optional ONNX model
-
-```bash
-python -m fm26_copilot.app --onnx-model models/fm26_detector.onnx
-```
-
-## Auto side detection (ASM home/away)
-
-- Enabled by default in live mode.
-- Resolver uses top scoreboard OCR first, then kit-color chips next to team names as fallback.
-- Match intel and scoreboard text use **EasyOCR** (bundled via `pip install -e .`; first run downloads recognition models).
-- Disable if needed:
-
-```bash
-python -m fm26_copilot.app --no-auto-team-side --team-side home
-```
-
-## Diagnostics mode
-
-Show side-detection internals (source, confidence, stability, current managed side):
-
-```bash
+# Diagnostics + ROI calibration dump
 python -m fm26_copilot.app --diagnostics --team-code ASM
+python -m fm26_copilot.app --dump-scoreboard-crops ./crops
+python -m fm26_copilot.app --roi-config fm26_copilot/scoreboard_rois.example.json
 ```
 
-With Qt enabled, diagnostics are shown in a separate window from tactical advice.
+`--seconds 0` runs until `Ctrl+C`. Missing optional deps (`dxcam`, `PySide6`, …) degrade to console / simulation.
 
-OCR can be explicitly disabled for side detection if needed:
+## Project layout
 
-```bash
-python -m fm26_copilot.app --diagnostics --ocr-off --team-code ASM
+```
+fm26_copilot/     # capture → vision → tactics → recommendations → safety → overlay
+tests/            # unit tests for rules, safety, ROI, side resolve
 ```
 
-`--seconds 0` means run continuously until `Ctrl+C`.
+## Honest limitations
 
-Note: `--ocr-off` disables OCR only for side detection.  
-Opponent/team/player diagnostics keep OCR enabled by default.  
-Use `--intel-ocr-off` to disable diagnostic OCR too.
+- Not a trained detector: no labeled FM dataset in-repo; ONNX does not emit boxes yet.
+- Overlay feedback is not collected from the user; quality proxy stays neutral unless you call the feedback API.
+- `MODEL_RELEASE.md` describes a *target* release process for the scaffold, not an active MLOps pipeline.
 
-If `dxcam`, `opencv`, `onnxruntime`, or `PySide6` are missing, the app degrades gracefully to console/simulation behavior.
+## License
+
+MIT — see [LICENSE](LICENSE).

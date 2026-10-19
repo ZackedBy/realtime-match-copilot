@@ -72,13 +72,22 @@ def configure_from_path(path: str | None) -> bool:
     if p is None or not p.is_file():
         return False
 
-    data = json.loads(p.read_text(encoding="utf-8"))
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"ROI JSON is not valid JSON: {p}") from exc
     if not isinstance(data, dict):
         raise ValueError("ROI JSON must be an object with float keys")
     for key, val in data.items():
         if key not in _ROI_KEYS:
             continue
-        g[key] = float(val)
+        try:
+            parsed = float(val)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"ROI key {key!r} must be a float, got {val!r}") from exc
+        if not 0.0 <= parsed <= 1.0:
+            raise ValueError(f"ROI key {key!r} must be in [0, 1], got {parsed}")
+        g[key] = parsed
     print(f"[fm26_copilot] ROI loaded from {p}")
     return True
 

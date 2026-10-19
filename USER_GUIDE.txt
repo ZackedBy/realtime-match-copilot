@@ -1,5 +1,6 @@
 FM26 AI Co-pilot — User guide (course submission)
 ================================================
+NOTE: For employers, start with README.md. This file keeps course/install detail.
 
 WHAT IT IS
   Real-time helper for Football Manager 26: captures the match screen (Windows
@@ -9,7 +10,7 @@ WHAT IT IS
 AI / “INTELLIGENT” PARTS (for your report)
   • EasyOCR — deep-learning text recognition on scoreboard crops (team codes, score).
   • Classical CV — preprocessing (resize, CLAHE, thresholds) before OCR.
-  • Optional ONNX detector — pitch/objects if you provide a model (--onnx-model).
+  • Optional ONNX path — session load / health probe only (no box inference yet).
   • Optional second OCR — Tesseract, for comparison / assignment “alternative approach”:
       pip install pytesseract
       (install Tesseract OCR for Windows separately)

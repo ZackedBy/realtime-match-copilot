@@ -37,8 +37,8 @@ class RecommendationEngine:
         if overload_against_managed:
             recs.append(
                 Recommendation(
-                    rec_id="protect_wide_right",
-                    title="Укрепить правый фланг в обороне",
+                    rec_id="protect_wide_flank",
+                    title="Укрепить перегруженный фланг в обороне",
                     body="Перегруз соперника на фланге повторяется, есть риск cutback.",
                     team=self.managed_team,
                     impact=0.67,

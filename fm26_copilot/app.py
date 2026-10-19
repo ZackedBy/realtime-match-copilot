@@ -7,7 +7,7 @@ import warnings
 from dataclasses import dataclass
 
 from .capture import ScreenCapture, ScreenCaptureConfig
-from .contracts import TelemetrySample, TeamSide
+from .contracts import FrameSignals, TelemetrySample, TeamSide
 from . import fm26_scoreboard_rois as scoreboard_rois
 from .feedback import FeedbackStore
 from .overlay import OverlayController
@@ -102,10 +102,11 @@ class CopilotApp:
                 t2 = time.perf_counter()
                 recs = self.recommendations.generate(tactical_state)
                 t3 = time.perf_counter()
+                tracker_ok = bool(vision_out.home_players or vision_out.away_players)
                 cards, fail_safe = self.safety.filter(
                     recs=recs,
                     vision_confidence=vision_out.confidence,
-                    tracker_ok=True,
+                    tracker_ok=tracker_ok,
                 )
                 render_cards = self.overlay.renderable_cards(cards)
                 self.overlay.present(render_cards)
@@ -113,8 +114,8 @@ class CopilotApp:
                 # After frame work so OCR time isn’t folded into vision latency / FPS proxy
                 self._update_match_intel_if_needed(frame)
 
-                for card in render_cards:
-                    self.feedback.mark_accepted(card.recommendation)
+                # Do not auto-accept cards: that gamed the quality proxy / rollout gate.
+                # Call FeedbackStore.mark_accepted / mark_dismissed from real UI hooks later.
 
                 sample = TelemetrySample(
                     stage_latencies_ms={
@@ -149,7 +150,7 @@ class CopilotApp:
             for wave in DEFAULT_WAVES:
                 print(f" - {wave.name}: {wave.traffic_pct}% traffic | scenarios={','.join(wave.scenarios)}")
 
-    def _update_managed_side_if_needed(self, frame) -> None:
+    def _update_managed_side_if_needed(self, frame: FrameSignals) -> None:
         if not self.team_context.auto_side_enabled:
             return
         if frame.raw_frame is None:
@@ -231,7 +232,7 @@ class CopilotApp:
         self.overlay.present_status(lines)
         self._last_diag_emit_ts = now
 
-    def _update_match_intel_if_needed(self, frame) -> None:
+    def _update_match_intel_if_needed(self, frame: FrameSignals) -> None:
         if not self.cfg.diagnostics_mode:
             return
         if frame.raw_frame is None:
@@ -273,9 +274,9 @@ class CopilotApp:
 def main() -> None:
     if sys.version_info[:2] >= (3, 13):
         print(
-            "fm26_copilot: на Python 3.13+ ставьте зависимости с готовыми wheels или используйте 3.12:\n"
-            "  py -3.12 -m pip install -e E:\\aifinal\n"
-            "  py -3.12 -m fm26_copilot.app ...",
+            "fm26_copilot: on Python 3.13+ prefer 3.11–3.12 for prebuilt wheels:\n"
+            "  python3.12 -m pip install -e .\n"
+            "  python3.12 -m fm26_copilot.app ...",
             file=sys.stderr,
         )
     warnings.filterwarnings("ignore", message=".*pin_memory.*", category=UserWarning)

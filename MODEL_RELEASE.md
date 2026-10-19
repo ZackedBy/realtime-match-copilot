@@ -1,21 +1,21 @@
-# Model Release Cycle
+# Model / release notes (scaffold)
 
-## Versioning
+This file describes a **target** promotion checklist for the co-pilot scaffold.
+There is **no trained model bundle or offline eval harness wired in CI yet**.
 
-- Format: `major.minor.patch` for recommendation/vision bundles.
-- Every bundle stores metrics snapshot and dataset tag.
+## Current reality
 
-## Promotion gates
+- Detector: OpenCV blobs (+ optional ONNX session load as a health probe).
+- Recommendations: fixed rule thresholds in `recommendations.py`.
+- Telemetry / drift / rollout: in-process helpers used at end of a run; not a deploy pipeline.
 
-1. Offline replay evaluation passes target scenarios.
-2. Shadow run in live matches with no user-facing cards.
-3. Safety gate checks:
-   - min FPS
-   - fail-safe ratio ceiling
-   - recommendation quality proxy floor
+## Intended gates (when real models exist)
 
-## Rollback
+1. Offline replay on tagged scenarios passes thresholds.
+2. Shadow run with cards suppressed.
+3. Safety: min FPS, fail-safe ratio ceiling, quality floor from **real** accept/dismiss feedback.
 
-- Automatic rollback when drift detector is triggered repeatedly in production windows.
-- Keep last known-good bundle as default fallback.
+## Rollback (intended)
 
+- Revert to last known-good config when drift trips repeatedly.
+- Keep a default heuristic path that does not require ONNX.
